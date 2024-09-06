@@ -1,6 +1,10 @@
 package com.inversefaust.backend.inversefaust_backend.service;
 
 import com.inversefaust.backend.inversefaust_backend.dto.*;
+import com.inversefaust.backend.inversefaust_backend.dto.AI.AIAdviceRequest;
+import com.inversefaust.backend.inversefaust_backend.dto.AI.AIScoreRequest;
+import com.inversefaust.backend.inversefaust_backend.dto.AI.AIScoreResponse;
+import com.inversefaust.backend.inversefaust_backend.dto.AI.ActivityDTO;
 import com.inversefaust.backend.inversefaust_backend.entity.Activity;
 import com.inversefaust.backend.inversefaust_backend.entity.User;
 import com.inversefaust.backend.inversefaust_backend.entity.UserActivity;
@@ -12,27 +16,29 @@ import com.inversefaust.backend.inversefaust_backend.repository.UserRepository;
 import com.inversefaust.backend.inversefaust_backend.repository.WolfScoreRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
     private final UserActivityRepository userActivityRepository;
     private final WolfScoreRepository wolfScoreRepository;
+
+
     RestTemplate restTemplate = new RestTemplate();
+    private final String aiActivityApiUrl = "http://localhost:8000/api/v1/ai/";
+
 
 
     public List<ActivityListResponse> getActivityList() {
@@ -67,33 +73,39 @@ public class ActivityService {
                 })
                 .collect(Collectors.toList());
 
+        // UserActivityRequest 리스트를 ActivityDTO 리스트로 변환
 
-        List<AIAdviceRequest.ActivityDTO> activityDTOS = activityList.stream()
-                .map(activityRequest -> {
-                    AIAdviceRequest.ActivityDTO dto = new AIAdviceRequest.ActivityDTO();
-                    dto.setActivity(activityRequest.getActivityId() + " " + activityRequest.getActivityDuration());
-                    dto.setDuration(activityRequest.getActivityDuration());
-                    return dto;
+        List<ActivityDTO> activityDTOList = userActivities.stream()
+                .map(userActivity -> {
+                    Activity activity = activityRepository.findByActivityId(userActivity.getUserActivityId().getActivityId());
+
+                    return ActivityDTO.builder()
+                            .activity(activity.getActivityName() + " " + activity.getPurpose())
+                           .duration(userActivity.getActivityDuration())
+                           .build();
                 })
                 .collect(Collectors.toList());
 
-        AIAdviceRequest adviceRequest = AIAdviceRequest.builder()
+        //AI 응답 요청
+        AIScoreResponse aiActivity = getAIActivity(AIScoreRequest.builder()
                 .userId(userId)
-                .activities(activityDTOS)
-                .build();
+                .activities(activityDTOList)
+                .build());
 
-        AIAdviceResponse aiResponse = getAdviceFromAI(adviceRequest);
 
-        WolfScore wolfScore = WolfScore.builder()
+        log.info("Activity: " + aiActivity);
+
+
+
+        // WolfScore 저장
+        wolfScoreRepository.save(WolfScore.builder()
                 .user(user)
-                .whiteScore(aiResponse.getWhiteScore())
-                .blackScore(aiResponse.getBlackScore())
+                .whiteScore(aiActivity.getWhiteScore())
+                .blackScore(aiActivity.getBlackScore())
                 .createdAt(LocalDateTime.now())
-                .build();
+                .build());
 
-        wolfScoreRepository.save(wolfScore);
-
-
+        // UserActivity 저장
         userActivityRepository.saveAll(userActivities);
     }
 
@@ -135,25 +147,22 @@ public class ActivityService {
     }
 
 
-    private AIAdviceResponse getAdviceFromAI(AIAdviceRequest requestDTO) {
-        String url = "http://localhost:8090/api/advice/ai/";
-
-        // 헤더 설정
+    private AIScoreResponse getAIActivity(AIScoreRequest request) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 요청을 JSON으로 변환
-        HttpEntity<AIAdviceRequest> requestEntity = new HttpEntity<>(requestDTO, headers);
+        // RequestBody 설정
+        HttpEntity<AIScoreRequest> requestEntity = new HttpEntity<>(request, headers);
 
-        // API 요청
-        ResponseEntity<AIAdviceResponse> responseEntity = restTemplate.exchange(
-                url,
+        // POST 요청 보내기
+        ResponseEntity<AIScoreResponse> responseEntity = restTemplate.exchange(
+                "http://localhost:8000/api/v1/ai",
                 HttpMethod.POST,
                 requestEntity,
-                AIAdviceResponse.class
+                AIScoreResponse.class
         );
 
-        // 응답 반환
+        // Response 반환
         return responseEntity.getBody();
     }
 }

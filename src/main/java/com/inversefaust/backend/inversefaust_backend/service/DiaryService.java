@@ -1,32 +1,37 @@
 package com.inversefaust.backend.inversefaust_backend.service;
 
-import com.inversefaust.backend.inversefaust_backend.dto.AIAdviceRequest;
+import com.inversefaust.backend.inversefaust_backend.dto.AI.AIAdviceRequest;
 import com.inversefaust.backend.inversefaust_backend.dto.AIAdviceResponse;
 import com.inversefaust.backend.inversefaust_backend.dto.DiaryRequest;
+import com.inversefaust.backend.inversefaust_backend.entity.Activity;
+import com.inversefaust.backend.inversefaust_backend.entity.Advice;
 import com.inversefaust.backend.inversefaust_backend.entity.Diary;
 import com.inversefaust.backend.inversefaust_backend.entity.User;
+import com.inversefaust.backend.inversefaust_backend.repository.AdviceRepository;
 import com.inversefaust.backend.inversefaust_backend.repository.DiaryRepository;
 import com.inversefaust.backend.inversefaust_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
-    RestTemplate restTemplate = new RestTemplate();
+    private final AdviceRepository adviceRepository;
 
+    RestTemplate restTemplate = new RestTemplate();
+    private final String aiAdviceApiUrl = "http://localhost:8000/api/v2/ai/";
 
     //일기 저장
     @Transactional
@@ -41,15 +46,23 @@ public class DiaryService {
                 .created_at(LocalDateTime.now())
                 .build());
 
-        AIAdviceRequest adviceRequest = AIAdviceRequest.builder()
+
+        AIAdviceResponse aiAdvice = getAIAdvice(AIAdviceRequest.builder()
                 .userId(userId)
                 .diary(diaryRequest.getContents())
-                .build();
+                .build());
 
-        AIAdviceResponse aiResponse = getAdviceFromAI(adviceRequest);
+        log.info("dfsadfadfas " + aiAdvice.getUserId());
 
-       return aiResponse.getDiaryAdvice();
+        String diaryAdvice = aiAdvice.getDiary_advice();
 
+        adviceRepository.save(Advice.builder()
+                        .user(user)
+                        .created_at(LocalDateTime.now())
+                        .contents(diaryAdvice)
+                        .build());
+
+        return diaryAdvice;
     }
 
     // 일기 수정
@@ -81,26 +94,24 @@ public class DiaryService {
     }
 
 
-    private AIAdviceResponse getAdviceFromAI(AIAdviceRequest requestDTO) {
-        String url = "http://localhost:8090/api/advice/ai/";
-
-        // 헤더 설정
+    public AIAdviceResponse getAIAdvice(AIAdviceRequest request) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 요청을 JSON으로 변환
-        HttpEntity<AIAdviceRequest> requestEntity = new HttpEntity<>(requestDTO, headers);
+        // RequestBody 설정
+        HttpEntity<AIAdviceRequest> requestEntity = new HttpEntity<>(request, headers);
 
-        // API 요청
+        // POST 요청 보내기
         ResponseEntity<AIAdviceResponse> responseEntity = restTemplate.exchange(
-                url,
+                "http://localhost:8000/api/v2/ai/",
                 HttpMethod.POST,
                 requestEntity,
                 AIAdviceResponse.class
         );
 
-        // 응답 반환
+        // Response 반환
         return responseEntity.getBody();
     }
+
 
 }
