@@ -33,8 +33,8 @@ public class UserController {
      *         응답의 HTTP 상태 코드는 HTTP.OK
      */
     @GetMapping("/score/{userId}")
-    public ResponseEntity<ScoreResponse> getScore(@PathVariable("userId") String userId){
-        ScoreResponse response = userService.getScore(userId);
+    public ResponseEntity<List<ScoreResponse>> getScore(@PathVariable("userId") String userId){
+        List<ScoreResponse> response = userService.getScore(userId);
         return ResponseEntity.ok(response);
     }
 
