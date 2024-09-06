@@ -73,37 +73,37 @@ public class ActivityService {
                 })
                 .collect(Collectors.toList());
 
-        // UserActivityRequest 리스트를 ActivityDTO 리스트로 변환
-
-        List<ActivityDTO> activityDTOList = userActivities.stream()
-                .map(userActivity -> {
-                    Activity activity = activityRepository.findByActivityId(userActivity.getUserActivityId().getActivityId());
-
-                    return ActivityDTO.builder()
-                            .activity(activity.getActivityName() + " " + activity.getPurpose())
-                           .duration(userActivity.getActivityDuration())
-                           .build();
-                })
-                .collect(Collectors.toList());
-
-        //AI 응답 요청
-        AIScoreResponse aiActivity = getAIActivity(AIScoreRequest.builder()
-                .userId(userId)
-                .activities(activityDTOList)
-                .build());
-
-
-        log.info("Activity: " + aiActivity);
-
-
-
-        // WolfScore 저장
-        wolfScoreRepository.save(WolfScore.builder()
-                .user(user)
-                .whiteScore(aiActivity.getWhiteScore())
-                .blackScore(aiActivity.getBlackScore())
-                .createdAt(LocalDateTime.now())
-                .build());
+//        // UserActivityRequest 리스트를 ActivityDTO 리스트로 변환
+//
+//        List<ActivityDTO> activityDTOList = userActivities.stream()
+//                .map(userActivity -> {
+//                    Activity activity = activityRepository.findByActivityId(userActivity.getUserActivityId().getActivityId());
+//
+//                    return ActivityDTO.builder()
+//                            .activity(activity.getActivityName() + " " + activity.getPurpose())
+//                           .duration(userActivity.getActivityDuration())
+//                           .build();
+//                })
+//                .collect(Collectors.toList());
+//
+//        //AI 응답 요청
+//        AIScoreResponse aiActivity = getAIActivity(AIScoreRequest.builder()
+//                .userId(userId)
+//                .activities(activityDTOList)
+//                .build());
+//
+//
+//        log.info("Activity: " + aiActivity);
+//
+//
+//
+//        // WolfScore 저장
+//        wolfScoreRepository.save(WolfScore.builder()
+//                .user(user)
+//                .whiteScore(aiActivity.getWhiteScore())
+//                .blackScore(aiActivity.getBlackScore())
+//                .createdAt(LocalDateTime.now())
+//                .build());
 
         // UserActivity 저장
         userActivityRepository.saveAll(userActivities);

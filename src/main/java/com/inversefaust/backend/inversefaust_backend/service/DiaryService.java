@@ -47,22 +47,22 @@ public class DiaryService {
                 .build());
 
 
-        AIAdviceResponse aiAdvice = getAIAdvice(AIAdviceRequest.builder()
-                .userId(userId)
-                .diary(diaryRequest.getContents())
-                .build());
+//        AIAdviceResponse aiAdvice = getAIAdvice(AIAdviceRequest.builder()
+//                .userId(userId)
+//                .diary(diaryRequest.getContents())
+//                .build());
+//
+//        log.info("dfsadfadfas " + aiAdvice.getUserId());
+//
+//        String diaryAdvice = aiAdvice.getDiary_advice();
+//
+//        adviceRepository.save(Advice.builder()
+//                        .user(user)
+//                        .created_at(LocalDateTime.now())
+//                        .contents(diaryAdvice)
+//                        .build());
 
-        log.info("dfsadfadfas " + aiAdvice.getUserId());
-
-        String diaryAdvice = aiAdvice.getDiary_advice();
-
-        adviceRepository.save(Advice.builder()
-                        .user(user)
-                        .created_at(LocalDateTime.now())
-                        .contents(diaryAdvice)
-                        .build());
-
-        return diaryAdvice;
+        return "유튜브는 조금만 운동은 많이 하시는게 좋아요!";
     }
 
     // 일기 수정
