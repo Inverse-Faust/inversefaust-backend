@@ -7,7 +7,6 @@ import lombok.*;
 import java.io.Serializable;
 import java.util.Objects;
 
-
 @Embeddable
 @Getter
 @Setter
@@ -16,7 +15,12 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserActivityId implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
+    @Column(name = "user_id")
     private String userId;
+
+    @Column(name = "activity_id")
     private String activityId;
 
     @Override
@@ -24,7 +28,7 @@ public class UserActivityId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserActivityId that = (UserActivityId) o;
-        return userId.equals(that.userId) && activityId.equals(that.activityId);
+        return Objects.equals(userId, that.userId) && Objects.equals(activityId, that.activityId);
     }
 
     @Override

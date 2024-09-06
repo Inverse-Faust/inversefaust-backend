@@ -18,6 +18,7 @@ import java.util.Objects;
 public class Activity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "activity_id", length = 255)
     private String activityId;
 
