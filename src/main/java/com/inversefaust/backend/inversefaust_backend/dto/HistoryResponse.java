@@ -15,5 +15,6 @@ import java.util.Map;
 public class HistoryResponse {
     private LocalDateTime date;
     private Map<String, Integer> activityList;
+    private String diaryId;
     private String diaryContent;
 }
