@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS Diary (
 -- Activity 테이블 생성
 CREATE TABLE IF NOT EXISTS Activity (
                           activity_id VARCHAR(255) NOT NULL PRIMARY KEY,
-                          activity_name VARCHAR(1000) NOT NULL
+                          activity_name VARCHAR(1000) NOT NULL,
+                          purpose varchar(255) NOT NULL
 );
 
 -- UserActivity 테이블 생성;
