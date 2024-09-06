@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS Advice (
                         user_id VARCHAR(255) NOT NULL,
                         created_at DATETIME NOT NULL,
                         contents VARCHAR(1000) NOT NULL,
-                        purpose varchar(255) NULL,
                         FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
@@ -35,7 +34,7 @@ CREATE TABLE IF NOT EXISTS Activity (
                           purpose varchar(255) NOT NULL
 );
 
--- UserActivity 테이블 생성;
+-- UserActivity 테이블 생성
 CREATE TABLE IF NOT EXISTS UserActivity (
                               user_id VARCHAR(255) NOT NULL,
                               activity_id VARCHAR(255) NOT NULL,
@@ -43,4 +42,16 @@ CREATE TABLE IF NOT EXISTS UserActivity (
                               activity_duration INT NOT NULL,
                               FOREIGN KEY (user_id) REFERENCES User(user_id),
                               FOREIGN KEY (activity_id) REFERENCES Activity(activity_id)
+);
+
+-- WolfScore 테이블 생성
+CREATE TABLE WolfScore (
+                           score_id VARCHAR(255) NOT NULL,       -- 점수 아이디
+                           user_id VARCHAR(255) NOT NULL,        -- 유저 아이디
+                           white_score INT NOT NULL DEFAULT 0,   -- 흰 늑대 점수
+                           black_score INT NOT NULL DEFAULT 0,   -- 검은 늑대 점수
+                           created_at DATETIME NOT NULL,         -- 생성일
+
+                           PRIMARY KEY (score_id),               -- 기본 키 설정
+                           FOREIGN KEY (user_id) REFERENCES User(user_id)  -- 유저 아이디 외래키 설정
 );

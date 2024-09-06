@@ -20,12 +20,10 @@ public class DiaryController {
     //일기 저장
     @PostMapping("/{userId}")
     public ResponseEntity<DiarySaveResponse> getScore(@PathVariable("userId") String userId, @RequestBody @Validated DiaryRequest diaryRequest){
-       diaryService.saveDiary(userId, diaryRequest);
+        String advice = diaryService.saveDiary(userId, diaryRequest);
         DiarySaveResponse response =
                 DiarySaveResponse.builder()
-                        .white_score(10)
-                        .black_score(100)
-                        .advice("유튜브는 조금만 보세요!")
+                        .advice(advice)
                         .build();
         return ResponseEntity.ok(response);
     }

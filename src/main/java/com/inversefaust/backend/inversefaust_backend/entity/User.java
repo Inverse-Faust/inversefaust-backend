@@ -30,15 +30,6 @@ public class User {
     @NotNull
     private String name;
 
-    @Column(name = "white_score", nullable = false)
-    @NotNull
-    private int white_score;
-
-    @Column(name = "black_score", nullable = false)
-    @NotNull
-    private int black_score;
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
