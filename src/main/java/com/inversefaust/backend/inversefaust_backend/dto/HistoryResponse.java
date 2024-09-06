@@ -16,4 +16,5 @@ public class HistoryResponse {
     private LocalDateTime date;
     private Map<String, Integer> activityList;
     private String diaryContent;
+    private String diaryId;
 }

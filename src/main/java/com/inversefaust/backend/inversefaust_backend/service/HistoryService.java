@@ -29,13 +29,13 @@ public class HistoryService {
         Map<LocalDate, List<UserActivity>> activityByDate = userActivityList.stream()
                 .collect(Collectors.groupingBy(activity -> activity.getCreatedAt().toLocalDate()));
 
-        // 일기를 날짜별로 그룹화한 후 각 날짜별로 가장 최신의 일기만 선택
-        Map<LocalDate, String> diaryByDate = userDiaryList.stream()
+        // 일기를 날짜별로 그룹화한 후 각 날짜별로 가장 최신의 일기만 선택 (Diary 객체 자체를 저장)
+        Map<LocalDate, Diary> diaryByDate = userDiaryList.stream()
                 .collect(Collectors.groupingBy(
                         diary -> diary.getCreated_at().toLocalDate(),
                         Collectors.collectingAndThen(
                                 Collectors.maxBy(Comparator.comparing(Diary::getCreated_at)),
-                                optionalDiary -> optionalDiary.map(Diary::getContents).orElse("")
+                                optionalDiary -> optionalDiary.orElse(null)  // Diary 객체를 가져오도록 수정
                         )
                 ));
 
@@ -54,8 +54,9 @@ public class HistoryService {
             Map<String, Integer> activityList = activities.stream()
                     .collect(Collectors.toMap(activity -> activity.getActivity().getActivityName(), UserActivity::getActivityDuration));
 
-            // 해당 날짜의 가장 최신 일기 가져오기 (없으면 빈 문자열)
-            String diaryContent = diaryByDate.getOrDefault(date, "");
+            // 해당 날짜의 가장 최신 일기 가져오기 (없으면 null)
+            Diary diary = diaryByDate.get(date);
+            String diaryContent = (diary != null) ? diary.getContents() : "";
 
             // 조건에 따른 일기 내용 설정
             if (diaryContent.isEmpty() && activityList.isEmpty()) {
@@ -67,6 +68,7 @@ public class HistoryService {
                     .date(date.atStartOfDay())  // LocalDate를 LocalDateTime으로 변환
                     .activityList(activityList)  // 활동 리스트 설정
                     .diaryContent(diaryContent)  // 일기 내용 설정
+                    .diaryId(diary != null ? diary.getDiaryId() : null)  // 일기 ID 설정 (없으면 null)
                     .build();
 
             // 리스트에 추가
