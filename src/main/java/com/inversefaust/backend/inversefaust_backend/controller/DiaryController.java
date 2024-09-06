@@ -6,12 +6,14 @@ import com.inversefaust.backend.inversefaust_backend.dto.ScoreResponse;
 import com.inversefaust.backend.inversefaust_backend.service.DiaryService;
 import com.inversefaust.backend.inversefaust_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/diary")
 public class DiaryController {
 
@@ -21,6 +23,7 @@ public class DiaryController {
     @PostMapping("/{userId}")
     public ResponseEntity<DiarySaveResponse> getScore(@PathVariable("userId") String userId, @RequestBody @Validated DiaryRequest diaryRequest){
         String advice = diaryService.saveDiary(userId, diaryRequest);
+        log.info("diary" + diaryRequest);
         DiarySaveResponse response =
                 DiarySaveResponse.builder()
                         .advice(advice)
